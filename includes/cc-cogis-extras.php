@@ -92,10 +92,10 @@ class CC_Cogis_Extras {
 		// Registration form additions
 		add_action( 'bp_before_registration_submit_buttons', array( $this, 'registration_section_output' ), 60 );
 		add_action( 'bp_core_signup_user', array( $this, 'registration_extras_processing'), 1, 71 );
-
-
-
-
+		// Add "cogis" as an interest if the registration originates from an SA page
+		// Filters array provided by registration_form_interest_query_string
+		// @returns array with new element (or not)
+		add_filter( 'registration_form_interest_query_string', array( $this, 'add_registration_interest_parameter' ), 12, 1 );
 	}
 
 	/**
@@ -523,13 +523,21 @@ class CC_Cogis_Extras {
 	}
 
 	public function determine_checked_status_default_is_checked( $field_name ){
-	  // In its default state, no $_POST should exist. If this is a resubmit effort, $_POST['signup_submit'] will be set, then we can trust the value of the checkboxes.
-	  if ( isset( $_POST['signup_submit'] ) && !isset( $_POST[ $field_name ] ) ) {
-	    // If the user specifically unchecked the box, don't make them do it again.
-	  } else {
-	    // Default state, $_POST['signup_submit'] isn't set. Or, it is set and the checkbox is also set.
-	    echo 'checked="checked"';
-	  } 
-}
+		  // In its default state, no $_POST should exist. If this is a resubmit effort, $_POST['signup_submit'] will be set, then we can trust the value of the checkboxes.
+		  if ( isset( $_POST['signup_submit'] ) && !isset( $_POST[ $field_name ] ) ) {
+		    // If the user specifically unchecked the box, don't make them do it again.
+		  } else {
+		    // Default state, $_POST['signup_submit'] isn't set. Or, it is set and the checkbox is also set.
+		    echo 'checked="checked"';
+		  } 
+	}
+	public function add_registration_interest_parameter( $interests ) {
+
+	    if ( bp_is_groups_component() && ( bp_get_current_group_id() == $this->cogis_id ) ) {
+	    	$interests[] = 'cogis';
+		}
+
+	    return $interests;
+	}
 
 }
