@@ -78,6 +78,7 @@ class CC_Cogis_Extras {
 		// Load public-facing style sheet and JavaScript.
 		// add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_styles' ) );
 		// add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_scripts' ) );
+		add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_registration_styles') );
 
 		/* Define custom functionality.
 		 * Refer To http://codex.wordpress.org/Plugin_API#Hooks.2C_Actions_and_Filters
@@ -87,6 +88,11 @@ class CC_Cogis_Extras {
 		add_action( 'bp_before_group_request_membership_content', array( $this, 'print_descriptive_text') );
 		add_action('bp_group_request_membership_content', array( $this, 'print_grantee_list' ) );
 		add_filter( 'groups_member_comments_before_save', array( $this, 'append_grantee_comment' ), 25, 2 );
+
+		// Registration form additions
+		add_action( 'bp_before_registration_submit_buttons', array( $this, 'registration_section_output' ), 60 );
+		add_action( 'bp_core_signup_user', array( $this, 'registration_extras_processing'), 1, 71 );
+
 
 
 
@@ -279,6 +285,11 @@ class CC_Cogis_Extras {
 		// wp_enqueue_style( $this->plugin_slug . '-plugin-styles', plugins_url( 'assets/css/public.css', __FILE__ ), array(), self::VERSION );
 	}
 
+	public function enqueue_registration_styles() {
+	    if( bp_is_register_page() && isset( $_GET['cogis'] ) && $_GET['cogis'] )
+	      wp_enqueue_style( 'cogis-section-register-css', plugin_dir_url( __FILE__ ) . 'cogis_registration_extras.css', array(), '0.1', 'screen' );
+	}
+
 	/**
 	 * Register and enqueues public-facing JavaScript files.
 	 *
@@ -295,11 +306,12 @@ class CC_Cogis_Extras {
 	 */
 	// 
 	public function print_descriptive_text() {
-		//If this isn't COGIS, don't bother.
-		if ( bp_get_current_group_id() != $this->cogis_id )
+		//If this isn't the COGIS group or the registration page, don't bother.
+		if ( ( bp_get_current_group_id() != $this->cogis_id ) &&
+		! ( bp_is_register_page() && ( isset( $_GET['cogis'] ) && $_GET['cogis'] ) ) )
 			return false;
 
-		echo '<p>The Robert Wood Johnson Foundation is offering access to the Childhood Obesity GIS collaborative group space to all current Childhood Obesity grantees free of charge. Within this space you can create maps, reports, documents, and add local data on the Commons. If you are interested in accessing this collaborative space, select your grant name from the list below. We&rsquo;ll respond with access within 24 hours.</p>';
+		echo '<p class="description">The Robert Wood Johnson Foundation is offering access to the Childhood Obesity GIS collaborative group space to all current Childhood Obesity grantees free of charge. Within this space you can create maps, reports and documents collaboratively on the Commons. If you are interested in accessing this collaborative space, select your grant name from the list below. We&rsquo;ll respond with access within 24 hours.</p>';
 	}
 
 	/**
@@ -309,8 +321,9 @@ class CC_Cogis_Extras {
 	 */
 	// 
 	public function print_grantee_list() {
-		//If this isn't COGIS, don't bother.
-		if ( bp_get_current_group_id() != $this->cogis_id )
+		//If this isn't the COGIS group or the registration page, don't bother.
+		if ( ( bp_get_current_group_id() != $this->cogis_id ) &&
+			! ( bp_is_register_page() && ( isset( $_GET['cogis'] ) && $_GET['cogis'] ) ) )
 			return false;
 		?>
 		<div class="content-row" style="margin-bottom:2em;">
@@ -452,12 +465,64 @@ class CC_Cogis_Extras {
 	}
 
 	public function append_grantee_comment( $comments, $membership_id ) {
-		//If this isn't COGIS, don't bother.
-		if ( bp_get_current_group_id() == $this->cogis_id && isset( $_POST['cogis_affiliation'] ) ) {
+		//If this isn't the COGIS group or the registration page, don't bother.
+		if ( ( bp_get_current_group_id() != $this->cogis_id ) &&
+		! ( bp_is_register_page() && ( isset( $_GET['cogis'] ) && $_GET['cogis'] ) ) )
+			return false;
+
+		if ( isset( $_POST['cogis_affiliation'] ) ) {
 			 $comments .= ' <em>User selected RWJF Childhood Obesity Grant Name: ' . $_POST['cogis_affiliation'] . '</em>';
 		}
 		return $comments;
 	}
 
+	// Registration form additions
+	function registration_section_output() {
+	  if ( isset( $_GET['cogis'] ) && $_GET['cogis'] ) :
+	  ?>
+	    <div id="cogis-interest-opt-in" class="register-section checkbox">
+	    	<?php  bp_group_avatar( array() ) ?>
+	      <h4 class="registration-headline">Join the Group: <em>Childhood Obesity GIS</em></h4>
+
+   	      <?php $this->print_descriptive_text(); ?>
+	      
+	      <label><input type="checkbox" name="cogis_interest_group" id="cogis_interest_group" value="agreed" <?php $this->determine_checked_status_default_is_checked( 'cogis_interest_group' ); ?> /> Yes, I’d like to request membership in the group.</label>
+
+	      <label for="group-request-membership-comments">Comments for the group admin (optional)</label>
+	      <textarea name="group-request-membership-comments" id="group-request-membership-comments"><?php 
+	      	if ( isset($_POST['group-request-membership-comments']) )
+	      		echo $_POST['group-request-membership-comments'];
+	      ?></textarea>
+
+   	      <?php $this->print_grantee_list(); ?>
+
+	    </div>
+	    <?php
+	    endif;
+	}
+
+	/**
+	* Update usermeta with custom registration data
+	* @since 0.1
+	*/
+	public function registration_extras_processing( $user_id ) {
+	  
+	  if ( isset( $_POST['cogis_interest_group'] ) ) {
+	  	// Create the group request
+	  	$request = groups_send_membership_request( $user_id, $this->cogis_id );
+	  }
+	  
+	  return $user_id;
+	}
+
+	public function determine_checked_status_default_is_checked( $field_name ){
+	  // In its default state, no $_POST should exist. If this is a resubmit effort, $_POST['signup_submit'] will be set, then we can trust the value of the checkboxes.
+	  if ( isset( $_POST['signup_submit'] ) && !isset( $_POST[ $field_name ] ) ) {
+	    // If the user specifically unchecked the box, don't make them do it again.
+	  } else {
+	    // Default state, $_POST['signup_submit'] isn't set. Or, it is set and the checkbox is also set.
+	    echo 'checked="checked"';
+	  } 
+}
 
 }

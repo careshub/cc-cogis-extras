@@ -1,0 +1,16 @@
+.standard-form #cogis-interest-opt-in {
+	clear: right;
+	float: right;
+	/*width: 48%;*/
+}
+
+.standard-form #cogis-interest-opt-in .registration-logo {
+	margin-right: 1em;
+	vertical-align: middle; /*Only works because element is display: inline;*/
+}
+
+.standard-form #cogis-interest-opt-in .registration-headline {
+	display: inline-block;
+	vertical-align: middle; /*Only works because element is display: inline;*/
+	width: 75%;
+}
