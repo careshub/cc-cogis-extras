@@ -481,7 +481,14 @@ class CC_Cogis_Extras {
 	  if ( isset( $_GET['cogis'] ) && $_GET['cogis'] ) :
 	  ?>
 	    <div id="cogis-interest-opt-in" class="register-section checkbox">
-	    	<?php  bp_group_avatar( array() ) ?>
+		    <?php  $avatar = bp_core_fetch_avatar( array(
+				'item_id' => $this->cogis_id,
+				'object'  => 'group',
+				'type'    => 'thumb',
+				'class'   => 'registration-logo',
+
+			) ); 
+			echo $avatar; ?>
 	      <h4 class="registration-headline">Join the Group: <em>Childhood Obesity GIS</em></h4>
 
    	      <?php $this->print_descriptive_text(); ?>
