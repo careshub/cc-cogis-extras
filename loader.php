@@ -14,7 +14,9 @@ if ( ! defined( 'WPINC' ) ) {
  * Public-Facing Functionality
  *----------------------------------------------------------------------------*/
 
-require_once( plugin_dir_path( __FILE__ ) . '/includes/cc-cogis-extras.php' );
-
-// Instantiate the booger.
-add_action( 'plugins_loaded', array( 'CC_Cogis_Extras', 'get_instance' ) );
+function cc_cogis_extras_class_init(){
+	// Get the class fired up
+	require_once( dirname( __FILE__ ) . '/includes/cc-cogis-extras.php' );
+	add_action( 'bp_include', array( 'CC_Cogis_Extras', 'get_instance' ), 21 );
+}
+add_action( 'bp_include', 'cc_cogis_extras_class_init' );
