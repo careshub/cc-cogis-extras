@@ -304,7 +304,7 @@ class CC_Cogis_Extras {
 	 *
 	 * @since    1.0.0
 	 */
-	// 
+	//
 	public function print_descriptive_text() {
 		//If this isn't the COGIS group or the registration page, don't bother.
 		if ( ( bp_get_current_group_id() != $this->cogis_id ) &&
@@ -319,7 +319,7 @@ class CC_Cogis_Extras {
 	 *
 	 * @since    1.0.0
 	 */
-	// 
+	//
 	public function print_grantee_list() {
 		//If this isn't the COGIS group or the registration page, don't bother.
 		if ( ( bp_get_current_group_id() != $this->cogis_id ) &&
@@ -487,16 +487,16 @@ class CC_Cogis_Extras {
 				'type'    => 'thumb',
 				'class'   => 'registration-logo',
 
-			) ); 
+			) );
 			echo $avatar; ?>
 	      <h4 class="registration-headline">Join the Group: <em>Childhood Obesity GIS</em></h4>
 
    	      <?php $this->print_descriptive_text(); ?>
-	      
+
 	      <label><input type="checkbox" name="cogis_interest_group" id="cogis_interest_group" value="agreed" <?php $this->determine_checked_status_default_is_checked( 'cogis_interest_group' ); ?> /> Yes, I’d like to request membership in the group.</label>
 
 	      <label for="group-request-membership-comments">Comments for the group admin (optional)</label>
-	      <textarea name="group-request-membership-comments" id="group-request-membership-comments"><?php 
+	      <textarea name="group-request-membership-comments" id="group-request-membership-comments"><?php
 	      	if ( isset($_POST['group-request-membership-comments']) )
 	      		echo $_POST['group-request-membership-comments'];
 	      ?></textarea>
@@ -513,12 +513,12 @@ class CC_Cogis_Extras {
 	* @since 0.1
 	*/
 	public function registration_extras_processing( $user_id ) {
-	  
+
 	  if ( isset( $_POST['cogis_interest_group'] ) ) {
 	  	// Create the group request
 	  	$request = groups_send_membership_request( $user_id, $this->cogis_id );
 	  }
-	  
+
 	  return $user_id;
 	}
 
@@ -529,7 +529,7 @@ class CC_Cogis_Extras {
 		  } else {
 		    // Default state, $_POST['signup_submit'] isn't set. Or, it is set and the checkbox is also set.
 		    echo 'checked="checked"';
-		  } 
+		  }
 	}
 	public function add_registration_interest_parameter( $interests ) {
 
