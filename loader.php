@@ -2,7 +2,7 @@
 /*
 Plugin Name: CC COGIS extras
 Description: Adds extras to the COGIS group space
-Version: 1.0
+Version: 1.1.0
 */
 
 // If this file is called directly, abort.
